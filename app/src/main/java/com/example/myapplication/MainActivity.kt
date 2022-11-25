@@ -6,6 +6,7 @@ import com.github.aachartmodel.aainfographics.aachartcreator.AAChartModel
 import com.github.aachartmodel.aainfographics.aachartcreator.AAChartType
 import com.github.aachartmodel.aainfographics.aachartcreator.AAChartView
 import com.github.aachartmodel.aainfographics.aachartcreator.AASeriesElement
+import kotlin.math.sqrt
 
 data class Data(var date: String = "",
                 var time: String = "",
@@ -17,44 +18,101 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-       /* val aaChartView = findViewById<AAChartView>(R.id.aa_chart_view)
+        //TODO: Нужно узнать, в каком формате получается время и дата
+
+        //Считаем, что мы данные получаем тут
+        val dataList = ArrayList<Data>()
+        for (i in 0 .. 30) {
+            dataList.add(Data(temperature = i.toDouble(), humidity = sqrt(i.toDouble()), date = "date_${i / 4}", time = "time_$i"))
+        }
+
+        //TODO: Функции фильтрации по дате и времени над dataList
+        //Первый вариант фильтрации по дате - неоптимальный - приведён ниже.
+        //Создаём реестр дат, затем сравниваем каждый элемент даты входных данных
+        //с каждым элементом реестра дат.
+        //Второй вариант - переводим в дни наименьшую и наибольшую требуемые даты,
+        //и затем переводим каждый элемент даты входных данных в дни и сравниваем.
+
+        //-----------------------Фильтр №1-------------------------
+        /*
+        val removalList = ArrayList<Data>()
+        for (data in dataList) {
+            if (data.date != "date_2") {
+                removalList.add(data)
+            }
+        }
+        dataList.removeAll(removalList.toSet())
+        */
+
+        //-----------------------Фильтр №2-------------------------
+
+        val lowReq = 2
+        val highReq = 4
+
+        val filterData = ArrayList<String>()
+        for (index in lowReq .. highReq) {
+            filterData.add("date_$index")
+        }
+
+        val removalList = ArrayList<Data>()
+        for (data in dataList) {
+            if (!filterData.contains(data.date)) {
+                removalList.add(data)
+            }
+        }
+        dataList.removeAll(removalList.toSet())
+
+        //---------------------------------------------------------
+
+        //Работаем с температурой
+        val temperatureData = ArrayList<Double>()
+        for (index in 0 until dataList.size) {
+            temperatureData.add(dataList[index].temperature)
+        }
+
+        //Работаем с влажностью
+        val humidityData = ArrayList<Double>()
+        for (index in 0 until dataList.size) {
+            humidityData.add(dataList[index].humidity)
+        }
+
+        val xAxisText = ArrayList<String>()
+        for (index in 0 until dataList.size) {
+            xAxisText.add("${dataList[index].date} ${dataList[index].time}")
+        }
+
+        val aaChartView = findViewById<AAChartView>(R.id.aa_chart_view)
         val aaChartModel : AAChartModel = AAChartModel()
             .chartType(AAChartType.Area)
-            //.title("title")
+            .dataLabelsEnabled(true)
+            .title("Влажность")
             //.subtitle("subtitle")
             .backgroundColor("#ffffff")
-            .dataLabelsEnabled(true)
             .series(arrayOf(
                 AASeriesElement()
-                    .name("Температура")
-                    .data(arrayOf(7.0, 6.9, 9.5, 14.5, 18.2, 21.5, 25.2, 26.5, 23.3, 18.3, 13.9, 9.6)),
-                AASeriesElement()
-                   .name("Влажность")
-                   .data(arrayOf(0.2, 0.8, 5.7, 11.3, 17.0, 22.0, 24.8, 24.1, 20.1, 14.1, 8.6, 2.5)),
+                    .name("Влажность")
+                    .data(humidityData.toArray())
+                    .color("#44BBCC"),
+                ),
+            ).categories(xAxisText.toArray(arrayOf(String())))
 
-            )
-            )
-        aaChartView.aa_drawChartWithChartModel(aaChartModel)
-*/
         val aaChartView2 = findViewById<AAChartView>(R.id.aa_chart_view2)
         val aaChartModel2 : AAChartModel = AAChartModel()
             .chartType(AAChartType.Area)
-            .title("Ааааааааа")
+            .dataLabelsEnabled(true)
+            .title("Температура")
             //.subtitle("subtitle")
             .backgroundColor("#ffffff")
-            .dataLabelsEnabled(true)
             .series(arrayOf(
                 AASeriesElement()
                     .name("Температура")
-                    .data(arrayOf(7.0, 6.9, 9.5, 14.5, 18.2, 21.5, 25.2, 26.5, 23.3, 18.3, 13.9, 9.6)),
-                AASeriesElement()
-                    .name("Влажность")
-                    .data(arrayOf(0.2, 0.8, 5.7, 11.3, 17.0, 22.0, 24.8, 24.1, 20.1, 14.1, 8.6, 2.5)),
+                    .data(temperatureData.toArray())
+                    .color("#DDBB22"),
+            ),
+            ).categories(xAxisText.toArray(arrayOf(String())))
 
-                )
-            )
+        aaChartView.aa_drawChartWithChartModel(aaChartModel)
         aaChartView2.aa_drawChartWithChartModel(aaChartModel2)
-
 
     }
 }
